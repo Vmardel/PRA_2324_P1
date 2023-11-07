@@ -11,66 +11,76 @@ class ListArray : public List<T> {
 	int n;
 	static const int MINSIZE = 2;
 	void resize(int new_size){
-			T arr2[new_size];
-		for( int i = 0; i < new_size; i++){
+			T *arr2= new T[new_size];
+		for( int i = 0; i < max; i++){
 			arr2[i] = arr[i];
 		}
-		delete arr;
+		delete[] arr;
 		arr = arr2;
 		max = new_size;	
 	}	
         // miembros privados
 
     public:
-	void insert(int pos, T e){
-		if(pos < 0 || pos > max-1){
+	void insert(int pos, T e) override{
+		if(pos < 0 || pos > n){
 			throw std::out_of_range("fuera de rango");
 		}
-		if(n == max-1){
-			resize(max + 1);
-		}
+		if(n == max){
+			resize(max * 2);
+		} 
 		if( pos == 0){
 			prepend(e);
 		}
-		if( pos == n){
+		else if( pos == size()){
 			append(e);
 		}
-		for(int i = n+1; i > pos; i--){
+		else { for(int i = n; i > pos; i--){
 			arr[i] = arr[i-1];
 		}
 		arr[pos] = e;
+		n++;
+		}
 	}
 
-	void append(T e){
+	void prepend(T e) override{
 		if (n == max) {
             		resize(max * 2);
 		}
+		if(n!=0){
 		for(int i = n; i > 0; i--){
-			arr[i + 1] = arr[i];
+			arr[i] = arr[i - 1];
+		}
 		}
 		arr[0] = e;
+		n++;
 	}
 
-	void prepend(T e){
+	void append(T e) override{
 		if (n == max) {
 			resize(max * 2);
 		}
-		arr[n+1] = e;
-            	
+		arr[n] = e;
+            	n++;
 	}
 
-	T remove(int pos){
-		if(pos >= 0 && pos < size()-1){
-                        return arr[pos];
-			delete[] arr;
-                }
+	T remove(int pos) override{
+		T aux;
+		if(pos >= 0 && pos < size()){
+                        aux = arr[pos];
+			for(int i = pos; i < n; i++){
+				arr[i] = arr[i+1];
+			}
+		}
                 else{
                         throw std::out_of_range("fuera de rango");
                 }
+		n--;
+                return aux;
 	}
 	
-	T get(int pos) const{
-		if(pos >= 0 && pos < size()-1){
+	T get(int pos) override{
+		if(pos >= 0 && pos < size()){
                         return arr[pos];
                 }
                 else{
@@ -78,7 +88,7 @@ class ListArray : public List<T> {
                 }
         }
 
-	int search(T e) const{
+	int search(T e) override{
 		int i = 0;
 		for( i; i < size(); i++){
 			if( arr[i] == e){
@@ -88,30 +98,30 @@ class ListArray : public List<T> {
 		return -1;
 	}
 
-	bool empty() const{
+	bool empty() override{
 		if(n != 0){
 			return false;
 		}
 		return true;
 	}
 
-	int size() const{
+	int size() override{
 		return n;
 	}
 
 	ListArray(){
-		if( MINSIZE != 2 ){
-			throw std::invalid_argument("valor erroneo en el MINSIZE" );
-		}
 		arr = new T[MINSIZE];
+		max = MINSIZE;
+		n = 0;
 	}
 
 	~ListArray(){
-		delete arr;
+		n = 0;
+		delete[] arr;
 	}
 
-	T operator[](int pos){
-		if( pos < 0 || pos > size()-1 ){
+	T& operator[](int pos){
+		if( pos < 0 || pos >= size() ){
 			throw std::out_of_range("esta fuera de rango" );
 		}
 		else{
@@ -119,8 +129,11 @@ class ListArray : public List<T> {
 		}
 	}	
 
-	friend std::ostream& operator<<(std::ostream &out, const ListArray<T> &list){
-			out << ListArray();
+	friend std::ostream& operator<<(std::ostream &out, ListArray<T> &list){
+			for(int i = 0;i < list.size(); i++){
+				out<<list[i]<<std::endl;
+			
+			} 
 			return out;
 	}
 
